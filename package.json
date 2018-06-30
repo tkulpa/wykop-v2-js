@@ -1,0 +1,33 @@
+{
+  "name": "wykop-v2",
+  "version": "0.0.1",
+  "description": "SDK for Wykop API v2",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/rnickson/wykop-v2.git"
+  },
+  "keywords": [
+    "wykop",
+    "wykoppl",
+    "wykopapi"
+  ],
+  "author": "rnickson <mickson@tuta.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://gitlab.com/rnickson/wykop-v2/issues"
+  },
+  "homepage": "https://gitlab.com/rnickson/wykop-v2#README",
+  "devDependencies": {
+    "eslint": "^5.0.1",
+    "eslint-config-airbnb-base": "^13.0.0",
+    "eslint-plugin-import": "^2.13.0"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "npmlog": "^4.1.2"
+  }
+}
