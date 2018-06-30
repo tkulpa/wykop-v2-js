@@ -50,34 +50,25 @@ const ret = {
     return output;
   },
   request: async (type, params = {}) => {
-    try {
-      const url = await ret.constructUrl(type, params);
-      const headers = await ret.constructHeaders(url, params);
-      let request;
-      if (params && params.post) {
-        const post = await ret.readyPostParams(params.post);
-        log.info('req', post);
-        request = await axios.post(
-          url,
-          post,
-          {
-            headers,
-          },
-        );
-      } else {
-        request = await axios.get(
-          url,
-          {
-            headers,
-          },
-        );
-      }
-      log.info('req', 'request', request);
-      return request.data;
-    } catch (err) {
-      log.error(err);
-      throw err;
+    const url = await ret.constructUrl(type, params);
+    const headers = await ret.constructHeaders(url, params);
+    let post;
+    let method;
+    if (params && params.post) {
+      post = await ret.readyPostParams(params.post);
+      log.info('req', post);
+      method = 'post';
+    } else {
+      method = 'get';
     }
+    const request = await axios({
+      method,
+      url,
+      data: post,
+      headers,
+    });
+    log.info('req', 'request', request);
+    return request.data;
   },
   ssl: true,
   userAgent: 'random',
