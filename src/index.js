@@ -4,6 +4,11 @@ const log = require('npmlog');
 // const sortPostParams = require('./sortPostParams');
 
 const ret = {
+  /**
+   * Construct URL to send a request
+   * @param {Array} type request type
+   * @param {Object} p request parameters
+   */
   constructUrl: async (type, p) => {
     let apiParams = ['appkey', ret.appkey];
     if (p && p.api) apiParams = apiParams.concat(p.api);
@@ -12,6 +17,11 @@ const ret = {
     url += `${apiParams.join('/')}/`;
     return url;
   },
+  /**
+   * Construct request headers
+   * @param {String} url request URL
+   * @param {Object} params request parameters
+   */
   constructHeaders: async (url, params) => {
     const headers = {
       'User-Agent': ret.userAgent,
@@ -22,6 +32,11 @@ const ret = {
     }
     return headers;
   },
+  /**
+   * Generate 'apisign' header
+   * @param {String} url request URL
+   * @param {Object} params request parameters
+   */
   sign: async (url, params) => {
     // Not tested yet
     let txt = ret.secretkey + url;
@@ -36,6 +51,10 @@ const ret = {
     }
     return crypto.createHash('md5').update(txt, 'binary').digest('hex');
   },
+  /**
+   * Force encode body to Unicode
+   * @param {Object} postParams request POST body
+   */
   readyPostParams: async (postParams) => {
     let i = 0;
     const output = {};
@@ -49,6 +68,11 @@ const ret = {
     log.info('rpp', output);
     return output;
   },
+  /**
+   * Make a request to Wykop API
+   * @param {Array} type request type
+   * @param {Object} params request parameters
+   */
   request: async (type, params = {}) => {
     const url = await ret.constructUrl(type, params);
     const headers = await ret.constructHeaders(url, params);
