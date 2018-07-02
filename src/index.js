@@ -1,6 +1,7 @@
 const axios = require('axios');
 const crypto = require('crypto');
 const log = require('npmlog');
+const querystring = require('querystring');
 // const sortPostParams = require('./sortPostParams');
 
 const ret = {
@@ -25,7 +26,7 @@ const ret = {
   constructHeaders: async (url, params) => {
     const headers = {
       'User-Agent': ret.userAgent,
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded',
     };
     if (ret.appkey !== 'aNd401dAPp') {
       headers.apisign = ret.sign(url, params);
@@ -66,7 +67,7 @@ const ret = {
     }
     log.info('rpp', i);
     log.info('rpp', output);
-    return output;
+    return querystring.stringify(output);
   },
   /**
    * Make a request to Wykop API
