@@ -2,6 +2,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const log = require('npmlog');
 const querystring = require('querystring');
+const isMaciej = require('./utils/isMaciej');
 // const sortPostParams = require('./sortPostParams');
 
 const ret = {
@@ -12,6 +13,7 @@ const ret = {
    */
   constructUrl: async (type, p) => {
     let apiParams = ['appkey', ret.appkey];
+    if (ret.loggedIn) apiParams = apiParams.concat(['userkey', ret.userkey]);
     if (p && p.api) apiParams = apiParams.concat(p.api);
     let url = `http${ret.ssl ? 's' : ''}://a2.wykop.pl/`;
     url += `${type.join('/')}/`;
@@ -28,7 +30,7 @@ const ret = {
       'User-Agent': ret.userAgent,
       'Content-Type': 'application/x-www-form-urlencoded',
     };
-    if (ret.appkey !== 'aNd401dAPp') {
+    if (isMaciej(ret.appkey)) {
       headers.apisign = ret.sign(url, params);
     }
     return headers;
@@ -94,6 +96,85 @@ const ret = {
     });
     log.info('req', 'request', request);
     return request.data;
+  },
+  login: async (data) => {
+    if (typeof data === 'object') {
+      if (data.login && data.password && isMaciej(ret.appkey)) {
+        const req = await ret.request(['login'], {
+          post: {
+            login: data.login,
+            password: data.password,
+          },
+        });
+        ret.userkey = req.data.userkey;
+        ret.login = req.data.profile.login;
+        ret.password = data.password;
+        ret.loggedIn = true;
+        return req;
+      } else if (data.login && data.accountkey) {
+        const req = await ret.request(['login'], {
+          post: {
+            login: data.login,
+            accountkey: data.accountkey,
+          },
+        });
+        ret.userkey = req.data.userkey;
+        ret.login = req.data.profile.login;
+        ret.accountkey = data.accountkey;
+        ret.loggedIn = true;
+        return req;
+      } else {
+        throw new Error('Wykop SDK error: Too little data to log in');
+      }
+    } else if (typeof data === 'string') {
+      const connectData = Buffer.from(data, 'base64').toString('utf8');
+      // There's no other way to verify
+      // if this is really provided by wykop
+      // or manipulated by user, than just making a request with it
+      if (!(connectData.login && connectData.appkey && connectData.token)) {
+        throw new Error('Manipulated connect data');
+      } else if (connectData.appkey !== ret.appkey) {
+        throw new Error('Connect data for wrong appkey');
+      } else {
+        const req = await ret.request(['login'], {
+          post: {
+            login: connectData.login,
+            accountkey: connectData.token,
+          },
+        });
+        ret.userkey = req.data.userkey;
+        ret.login = req.data.profile.login;
+        ret.accountkey = connectData.token;
+        ret.loggedIn = true;
+        return req;
+      }
+    } else if ((data === undefined || data === null)
+      && ret.loggedIn && ret.login
+      && (ret.accountkey || (ret.password && isMaciej(ret.appkey)))) {
+      if (ret.accountkey) {
+        const req = await ret.request(['login'], {
+          post: {
+            login: ret.login,
+            accountkey: ret.accountkey,
+          },
+        });
+        ret.userkey = req.userkey;
+        ret.login = req.data.login;
+        return req;
+      } else if (ret.password) {
+        const req = await ret.request(['login'], {
+          post: {
+            login: ret.login,
+            password: ret.password,
+          },
+        });
+        ret.userkey = req.userkey;
+        ret.login = req.data.login;
+        return req;
+      }
+    } else {
+      throw new Error('Wrong data type - accepting Object or Connect method string only');
+    }
   },
   ssl: true,
   userAgent: 'random',
