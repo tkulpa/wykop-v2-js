@@ -176,6 +176,15 @@ const ret = {
       throw new Error('Wrong data type - accepting Object or Connect method string only');
     }
   },
+  constructConnectURL: async (redirectURL) => {
+    let url = await ret.constructUrl(['login', 'connect']);
+    if (redirectURL) {
+      const redirect = Buffer.from(encodeURIComponent(redirectURL)).toString('base64');
+      const secure = crypto.createHash('md5').update(encodeURIComponent(`${ret.secretkey},${redirectURL}`, 'binary')).digest('hex');
+      url += `?redirect=${redirect}&secure=${secure}`;
+    }
+    return url;
+  },
   ssl: true,
   userAgent: 'random',
 };
