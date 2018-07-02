@@ -2,6 +2,8 @@
     "extends": "airbnb-base",
     "rules": {
         "no-else-return": "off",
-        "consistent-return": "off"
+        "consistent-return": "off",
+        "no-unneeded-ternary": "off",
+        "class-methods-use-this": "off"
     }
 }
