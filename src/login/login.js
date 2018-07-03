@@ -7,7 +7,7 @@ module.exports = class login {
     this.API = new API(wykop);
   }
 
-  async withData(data) {
+  async normal(data) {
     if (data.login && data.password && isMaciej(this.wykop.appkey)) {
       const req = await this.API.request(['login'], {
         post: {
@@ -37,7 +37,7 @@ module.exports = class login {
     }
   }
 
-  async withConnectData(data) {
+  async connect(data) {
     const connectData = Buffer.from(data, 'base64').toString('utf8');
     // There's no other way to verify
     // if this is really provided by wykop
