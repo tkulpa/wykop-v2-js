@@ -1,0 +1,7 @@
+pseudotest.js
+sortPostParams.js
+
+node_modules/
+.gitignore
+.eslintrc.*
+.vscode/
