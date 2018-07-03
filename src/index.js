@@ -12,5 +12,7 @@ module.exports = class Wykop {
     this.API = new API(this);
     this.login = new Login(this);
     this.connect = new Connect(this);
+
+    this.request = this.API.request;
   }
 };
