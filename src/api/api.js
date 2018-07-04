@@ -1,6 +1,7 @@
 const axios = require('axios');
 const crypto = require('crypto');
 const querystring = require('querystring');
+const log = require('npmlog');
 const { isMaciej } = require('../utils/isMaciej');
 
 module.exports = class API {
@@ -16,7 +17,7 @@ module.exports = class API {
   async constructUrl(type, p) {
     let apiParams = ['appkey', this.wykop.appkey];
     if (this.wykop.loggedIn) apiParams = apiParams.concat(['userkey', this.wykop.userkey]);
-    if (p && p.api) apiParams = apiParams.concat(p.api);
+    if (p && p.api) apiParams = p.api.concat(apiParams);
     let url = `http${this.ssl ? 's' : ''}://a2.wykop.pl/`;
     url += `${type.join('/')}/`;
     url += `${apiParams.join('/')}/`;
@@ -92,6 +93,8 @@ module.exports = class API {
     } else {
       method = 'get';
     }
+    log.silly('api', 'method', method);
+    log.silly('api', 'url', url);
     const req = await axios({
       method,
       url,
