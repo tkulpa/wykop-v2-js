@@ -34,8 +34,8 @@ module.exports = class API {
       'User-Agent': this.wykop.userAgent,
       'Content-Type': 'application/x-www-form-urlencoded',
     };
-    if (isMaciej(this.wykop.appkey)) {
-      headers.apisign = this.sign(url, params);
+    if (!isMaciej(this.wykop.appkey)) {
+      headers.apisign = await this.sign(url, params);
     }
     return headers;
   }
@@ -61,7 +61,7 @@ module.exports = class API {
    */
   async sign(url, params) {
     // Not tested yet
-    let txt = this.secretkey + url;
+    let txt = `${this.wykop.secretkey}${url}`;
     if (params && params.post) {
       let postValues = [];
       const postKeys = Object.keys(params.post);
@@ -74,7 +74,9 @@ module.exports = class API {
       }
       txt += postValues.join(',');
     }
-    return crypto.createHash('md5').update(txt, 'binary').digest('hex');
+    log.silly('api', 'sign txt', txt);
+    const result = await crypto.createHash('md5').update(txt, 'binary').digest('hex');
+    return result;
   }
 
   /**
@@ -95,6 +97,8 @@ module.exports = class API {
     }
     log.silly('api', 'method', method);
     log.silly('api', 'url', url);
+    log.silly('api', 'post data', post);
+    log.silly('api', 'headers', headers);
     const req = await axios({
       method,
       url,
