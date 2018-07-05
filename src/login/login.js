@@ -4,31 +4,30 @@ const { isMaciej } = require('../utils/isMaciej');
 module.exports = class login {
   constructor(wykop) {
     this.wykop = wykop;
-    this.API = new API(wykop);
   }
 
   async normal(data) {
     if (data.login && data.password && isMaciej(this.wykop.appkey)) {
-      const req = await this.API.request(['login'], {
+      const req = await this.wykop.API.request(['login'], {
         post: {
           login: data.login,
           password: data.password,
         },
       });
-      this.wykop.userkey = req.data.userkey;
-      this.wykop.login = req.data.profile.login;
+      this.wykop.userkey = req.userkey;
+      this.wykop.login = req.profile.login;
       this.wykop.password = data.password;
       this.wykop.loggedIn = true;
       return req;
     } else if (data.login && data.accountkey) {
-      const req = await this.API.request(['login'], {
+      const req = await this.wykop.API.request(['login'], {
         post: {
           login: data.login,
           accountkey: data.accountkey,
         },
       });
-      this.wykop.userkey = req.data.userkey;
-      this.wykop.login = req.data.profile.login;
+      this.wykop.userkey = req.userkey;
+      this.wykop.login = req.profile.login;
       this.wykop.accountkey = data.accountkey;
       this.wykop.loggedIn = true;
       return req;
@@ -47,14 +46,14 @@ module.exports = class login {
     } else if (connectData.appkey !== this.appkey) {
       throw new Error('Connect data for wrong appkey');
     } else {
-      const req = await this.API.request(['login'], {
+      const req = await this.wykop.API.request(['login'], {
         post: {
           login: connectData.login,
           accountkey: connectData.token,
         },
       });
-      this.wykop.userkey = req.data.userkey;
-      this.wykop.login = req.data.profile.login;
+      this.wykop.userkey = req.userkey;
+      this.wykop.login = req.profile.login;
       this.wykop.accountkey = connectData.token;
       this.wykop.loggedIn = true;
       return req;

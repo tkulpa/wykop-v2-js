@@ -2,6 +2,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const querystring = require('querystring');
 const log = require('npmlog');
+const Login = require('../login/login');
 const { isMaciej } = require('../utils/isMaciej');
 
 module.exports = class API {
@@ -68,7 +69,6 @@ module.exports = class API {
       let i = 0;
       for (; i < postKeys.length; i += 1) {
         postValues = postValues.concat(
-          postValues,
           unescape(encodeURIComponent(params.post[postKeys[i]])),
         );
       }
@@ -99,12 +99,37 @@ module.exports = class API {
     log.silly('api', 'url', url);
     log.silly('api', 'post data', post);
     log.silly('api', 'headers', headers);
-    const req = await axios({
+    const requestConfig = {
       method,
       url,
       data: post,
       headers,
+    };
+    return new Promise(async (resolve, reject) => {
+      axios(requestConfig).then((res) => {
+        if (res.error) {
+          // if log in required
+          // TODO: set actual error code
+          if (res.error.code === -1 && this.wykop.loggedIn) {
+            // log in again and retry
+            this.login = new Login(this.wykop);
+            this.login.relogin().then(() => axios(requestConfig))
+              .then((res2) => {
+                if (res2.data.error) {
+                  reject(res2.data.error);
+                } else {
+                  resolve(res2.data);
+                }
+              })
+              .catch(res2 => reject(res2));
+          } else {
+            reject(res.error);
+          }
+        } else {
+          resolve(res.data.data);
+        }
+      })
+        .catch(res => reject(res));
     });
-    return req.data;
   }
 };
