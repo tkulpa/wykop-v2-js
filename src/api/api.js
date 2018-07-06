@@ -107,10 +107,14 @@ module.exports = class API {
     };
     return new Promise(async (resolve, reject) => {
       axios(requestConfig).then((res) => {
-        if (res.error) {
+        if (!res.headers['content-type'].includes('application/json')) {
+          reject(res);
+        } else if (res.status !== 200) {
+          reject(res);
+        } else if (res.data.error) {
           // if log in required
           // TODO: set actual error code
-          if (res.error.code === -1 && this.wykop.loggedIn) {
+          if (res.data.error.code === -1 && this.wykop.loggedIn) {
             // log in again and retry
             this.login = new Login(this.wykop);
             this.login.relogin().then(() => axios(requestConfig))
