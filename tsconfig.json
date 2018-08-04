@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "allowJs": true,
+    "target": "es6",
+    "types": [
+      "axios"
+    ]
+  },
+  "include": [
+    "./src/**/*",
+    "./src/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "pseudotest.ts"
+  ]
+}

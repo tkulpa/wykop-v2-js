@@ -1,7 +1,9 @@
-const API = require('../api/api');
-const { isMaciej } = require('../utils/isMaciej');
+import isMaciej from '../utils/isMaciej';
+import connectData from '../types/connectData';
 
-module.exports = class login {
+export default class Login {
+  wykop: any;
+
   constructor(wykop) {
     this.wykop = wykop;
   }
@@ -37,13 +39,13 @@ module.exports = class login {
   }
 
   async connect(data) {
-    const connectData = Buffer.from(data, 'base64').toString('utf8');
+    const connectData: connectData = JSON.parse(btoa(data));
     // There's no other way to verify
     // if this is really provided by wykop
     // or manipulated by user, than just making a request with it
     if (!(connectData.login && connectData.appkey && connectData.token)) {
       throw new Error('Manipulated connect data');
-    } else if (connectData.appkey !== this.appkey) {
+    } else if (connectData.appkey !== this.wykop.appkey) {
       throw new Error('Connect data for wrong appkey');
     } else {
       const req = await this.wykop.API.request(['login'], {
@@ -62,12 +64,12 @@ module.exports = class login {
 
   async relogin() {
     if (this.wykop.login && this.wykop.password && isMaciej(this.wykop.appkey)) {
-      this.withData({
+      this.normal({
         login: this.wykop.login,
         password: this.wykop.password,
       });
     } else if (this.wykop.login && this.wykop.accountkey) {
-      this.withData({
+      this.normal({
         login: this.wykop.login,
         accountkey: this.wykop.accountkey,
       });
@@ -75,4 +77,4 @@ module.exports = class login {
       throw new Error("Class doesn't contain all required information");
     }
   }
-};
+}

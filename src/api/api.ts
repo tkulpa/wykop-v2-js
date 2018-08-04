@@ -1,11 +1,15 @@
-const axios = require('axios');
-const crypto = require('crypto');
-const querystring = require('querystring');
-const log = require('npmlog');
-const Login = require('../login/login');
-const { isMaciej } = require('../utils/isMaciej');
+import axios from 'axios';
+import crypto from 'crypto';
+import querystring from 'querystring';
+import log from 'npmlog';
+import Login from '../login/login';
+import isMaciej from '../utils/isMaciej';
+import params from '../types/params';
 
-module.exports = class API {
+export default class API {
+  wykop: any;
+  login: Login;
+
   constructor(wykop) {
     this.wykop = wykop;
   }
@@ -15,11 +19,11 @@ module.exports = class API {
    * @param {Array} type request type
    * @param {Object} p request parameters
    */
-  async constructUrl(type, p) {
+  async constructUrl(type: Array<String>, p: params) {
     let apiParams = ['appkey', this.wykop.appkey];
     if (this.wykop.loggedIn) apiParams = apiParams.concat(['userkey', this.wykop.userkey]);
     if (p && p.api) apiParams = p.api.concat(apiParams);
-    let url = `http${this.ssl ? 's' : ''}://a2.wykop.pl/`;
+    let url = `http${this.wykop.ssl ? 's' : ''}://a2.wykop.pl/`;
     url += `${type.join('/')}/`;
     url += `${apiParams.join('/')}/`;
     return url;
@@ -30,13 +34,14 @@ module.exports = class API {
    * @param {String} url request URL
    * @param {Object} params request parameters
    */
-  async constructHeaders(url, params) {
+  async constructHeaders(url: String, { post }) {
     const headers = {
       'User-Agent': this.wykop.userAgent,
       'Content-Type': 'application/x-www-form-urlencoded',
+      apisign: await this.sign(url, { post }),
     };
-    if (!isMaciej(this.wykop.appkey)) {
-      headers.apisign = await this.sign(url, params);
+    if (isMaciej(this.wykop.appkey)) {
+      delete(headers.apisign);
     }
     return headers;
   }
@@ -60,16 +65,16 @@ module.exports = class API {
    * @param {String} url request URL
    * @param {Object} params request parameters
    */
-  async sign(url, params) {
+  async sign(url, { post }) {
     // Not tested yet
     let txt = `${this.wykop.secretkey}${url}`;
-    if (params && params.post) {
+    if (post) {
       let postValues = [];
-      const postKeys = Object.keys(params.post);
+      const postKeys = Object.keys(post);
       let i = 0;
       for (; i < postKeys.length; i += 1) {
         postValues = postValues.concat(
-          unescape(encodeURIComponent(params.post[postKeys[i]])),
+          unescape(encodeURIComponent(post[postKeys[i]])),
         );
       }
       txt += postValues.join(',');
@@ -84,16 +89,14 @@ module.exports = class API {
    * @param {Array} type request type
    * @param {Object} params request parameters
    */
-  async request(type, params = {}) {
-    const url = await this.constructUrl(type, params);
-    const headers = await this.constructHeaders(url, params);
-    let post;
-    let method;
-    if (params && params.post) {
-      post = await this.readyPostParams(params.post);
+  async request(type, { api, post }: params) {
+    const url = await this.constructUrl(type, { api, post });
+    const headers = await this.constructHeaders(url, { post });
+    let data;
+    let method = 'get';
+    if (post) {
+      data = await this.readyPostParams(post);
       method = 'post';
-    } else {
-      method = 'get';
     }
     log.silly('api', 'method', method);
     log.silly('api', 'url', url);
@@ -102,38 +105,43 @@ module.exports = class API {
     const requestConfig = {
       method,
       url,
-      data: post,
+      data,
       headers,
     };
     return new Promise(async (resolve, reject) => {
-      axios(requestConfig).then((res) => {
-        if (!res.headers['content-type'].includes('application/json')) {
-          reject(res);
-        } else if (res.status !== 200) {
-          reject(res);
-        } else if (res.data.error) {
-          // if log in required
+      axios(requestConfig)
+        .catch(res => reject(res))
+        .then((res) => {
+          if (!res.headers['content-type'].includes('application/json')) {
+            reject(res);
+          } else if (!res.status.ok) {
+            reject(res);
+          } else if (res.data.error) {
+          // if userkey expired
           // TODO: set actual error code
-          if (res.data.error.code === -1 && this.wykop.loggedIn) {
-            // log in again and retry
-            this.login = new Login(this.wykop);
-            this.login.relogin().then(() => axios(requestConfig))
-              .then((res2) => {
-                if (res2.data.error) {
-                  reject(res2.data.error);
-                } else {
-                  resolve(res2.data);
-                }
-              })
-              .catch(res2 => reject(res2));
+            if (res.data.error.code === -1 && this.wykop.loggedIn) {
+              // log in again and retry
+              this.login = new Login(this.wykop);
+              this.login.relogin().then(() => axios(requestConfig))
+                .catch(res2 => reject(res2))
+                .then((res2) => {
+                  if (!res2.data) {
+                    reject(res2);
+                  } else if (res2.data.error) {
+                    reject(res2.data.error);
+                  } else {
+                    resolve(res2.data.data);
+                  }
+                })
+                .catch(res2 => reject(res2));
+            } else {
+              reject(res.error);
+            }
           } else {
-            reject(res.error);
+            resolve(res.data.data);
           }
-        } else {
-          resolve(res.data.data);
-        }
-      })
+        })
         .catch(res => reject(res));
     });
   }
-};
+}
