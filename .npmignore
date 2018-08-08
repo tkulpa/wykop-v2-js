@@ -1,6 +1,5 @@
-pseudotest.js
-sortPostParams.js
-dist/
+pseudotest.*
+src/
 
 node_modules/
 .gitignore

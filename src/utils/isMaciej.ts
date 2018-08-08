@@ -1,11 +1,9 @@
-const maciejKeys = {
+interface Keys {
+  [key: string]: boolean;
+}
+
+const maciejKeys: Keys = {
   aNd401dAPp: true,
 };
 
-export default (appkey) => {
-  if (maciejKeys[appkey]) {
-    return true;
-  } else {
-    return false;
-  }
-};
+export default (appkey: string) => (!!maciejKeys[appkey]);

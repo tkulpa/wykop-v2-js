@@ -1,14 +1,16 @@
 import isMaciej from '../utils/isMaciej';
-import connectData from '../types/connectData';
+import IConnectData from '../types/IConnectData';
+import Wykop from '..';
+import ILoginData from '../types/ILoginData';
 
 export default class Login {
-  wykop: any;
+  wykop: Wykop;
 
-  constructor(wykop) {
+  constructor(wykop: Wykop) {
     this.wykop = wykop;
   }
 
-  async normal(data) {
+  async normal(data: ILoginData) {
     if (data.login && data.password && isMaciej(this.wykop.appkey)) {
       const req = await this.wykop.API.request(['login'], {
         post: {
@@ -17,7 +19,7 @@ export default class Login {
         },
       });
       this.wykop.userkey = req.userkey;
-      this.wykop.login = req.profile.login;
+      this.wykop.username = req.profile.login;
       this.wykop.password = data.password;
       this.wykop.loggedIn = true;
       return req;
@@ -38,8 +40,8 @@ export default class Login {
     }
   }
 
-  async connect(data) {
-    const connectData: connectData = JSON.parse(btoa(data));
+  async connect(data: string) {
+    const connectData: IConnectData = JSON.parse(btoa(data));
     // There's no other way to verify
     // if this is really provided by wykop
     // or manipulated by user, than just making a request with it
@@ -63,14 +65,14 @@ export default class Login {
   }
 
   async relogin() {
-    if (this.wykop.login && this.wykop.password && isMaciej(this.wykop.appkey)) {
+    if (this.wykop.username && this.wykop.password && isMaciej(this.wykop.appkey)) {
       this.normal({
-        login: this.wykop.login,
+        login: this.wykop.username,
         password: this.wykop.password,
       });
-    } else if (this.wykop.login && this.wykop.accountkey) {
+    } else if (this.wykop.username && this.wykop.accountkey) {
       this.normal({
-        login: this.wykop.login,
+        login: this.wykop.username,
         accountkey: this.wykop.accountkey,
       });
     } else {

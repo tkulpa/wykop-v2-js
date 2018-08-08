@@ -2,15 +2,16 @@ import axios from 'axios';
 import crypto from 'crypto';
 import querystring from 'querystring';
 import log from 'npmlog';
+import Wykop from '..';
 import Login from '../login/login';
 import isMaciej from '../utils/isMaciej';
-import params from '../types/params';
+import IParams from '../types/IParams';
+import IWykopResponse from '../types/IWykopResponse';
 
 export default class API {
-  wykop: any;
-  login: Login;
+  wykop: Wykop;
 
-  constructor(wykop) {
+  constructor(wykop: Wykop) {
     this.wykop = wykop;
   }
 
@@ -19,11 +20,15 @@ export default class API {
    * @param {Array} type request type
    * @param {Object} p request parameters
    */
-  async constructUrl(type: Array<String>, p: params) {
+  async constructUrl(type: Array<String>, p?: IParams) {
     let apiParams = ['appkey', this.wykop.appkey];
-    if (this.wykop.loggedIn) apiParams = apiParams.concat(['userkey', this.wykop.userkey]);
-    if (p && p.api) apiParams = p.api.concat(apiParams);
-    let url = `http${this.wykop.ssl ? 's' : ''}://a2.wykop.pl/`;
+    if (this.wykop.loggedIn && this.wykop.userkey) {
+      apiParams = apiParams.concat(['userkey', this.wykop.userkey]);
+    }
+    if (p && p.api) {
+      apiParams = p.api.concat(apiParams);
+    }
+    let url = `http${this.wykop.ssl ? 's' : ''}://${this.wykop.host}/`;
     url += `${type.join('/')}/`;
     url += `${apiParams.join('/')}/`;
     return url;
@@ -34,7 +39,7 @@ export default class API {
    * @param {String} url request URL
    * @param {Object} params request parameters
    */
-  async constructHeaders(url: String, { post }) {
+  async constructHeaders(url: string, { post }: IParams) {
     const headers = {
       'User-Agent': this.wykop.userAgent,
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -50,14 +55,8 @@ export default class API {
    * Force encode body to Unicode
    * @param {Object} postParams request POST body
    */
-  async readyPostParams(postParams) {
-    let i = 0;
-    const output = {};
-    const postKeys = Object.keys(postParams);
-    for (; i < postKeys.length; i += 1) {
-      output[postKeys[i]] = unescape(encodeURIComponent(postParams[postKeys[i]]));
-    }
-    return querystring.stringify(output);
+  async readyPostParams({ post }: IParams) {
+    return querystring.stringify(post);
   }
 
   /**
@@ -65,12 +64,12 @@ export default class API {
    * @param {String} url request URL
    * @param {Object} params request parameters
    */
-  async sign(url, { post }) {
+  async sign(url: string, { post }: IParams) {
     // Not tested yet
     let txt = `${this.wykop.secretkey}${url}`;
     if (post) {
-      let postValues = [];
-      const postKeys = Object.keys(post);
+      let postValues: Array<string> = [];
+      const postKeys: Array<string> = Object.keys(post);
       let i = 0;
       for (; i < postKeys.length; i += 1) {
         postValues = postValues.concat(
@@ -80,16 +79,11 @@ export default class API {
       txt += postValues.join(',');
     }
     log.silly('api', 'sign txt', txt);
-    const result = await crypto.createHash('md5').update(txt, 'binary').digest('hex');
-    return result;
+    // @ts-ignore
+    return crypto.createHash('md5').update(txt, 'binary').digest('hex');
   }
 
-  /**
-   * Make a request to Wykop API
-   * @param {Array} type request type
-   * @param {Object} params request parameters
-   */
-  async request(type, { api, post }: params) {
+  async readyAxiosConfig(type: Array<String>, { api, post }: IParams) {
     const url = await this.constructUrl(type, { api, post });
     const headers = await this.constructHeaders(url, { post });
     let data;
@@ -102,28 +96,34 @@ export default class API {
     log.silly('api', 'url', url);
     log.silly('api', 'post data', post);
     log.silly('api', 'headers', headers);
-    const requestConfig = {
+    return {
       method,
       url,
       data,
       headers,
     };
+  }
+
+  /**
+   * Make a request to Wykop API
+   * @param {Array} type request type
+   * @param {Object} params request parameters
+   */
+  async request(type: Array<String>, { api, post }: IParams): Promise<IWykopResponse> {
     return new Promise(async (resolve, reject) => {
-      axios(requestConfig)
-        .catch(res => reject(res))
+      axios(await this.readyAxiosConfig(type, { api, post }))
         .then((res) => {
+          // if server sends HTML error ("trwa aktualizacja serwisu", "cos poszło nie tak")
           if (!res.headers['content-type'].includes('application/json')) {
             reject(res);
-          } else if (!res.status.ok) {
-            reject(res);
+          // if server sends JSON error
           } else if (res.data.error) {
           // if userkey expired
           // TODO: set actual error code
             if (res.data.error.code === -1 && this.wykop.loggedIn) {
               // log in again and retry
-              this.login = new Login(this.wykop);
-              this.login.relogin().then(() => axios(requestConfig))
-                .catch(res2 => reject(res2))
+              this.wykop.login.relogin()
+                .then(async () => axios(await this.readyAxiosConfig(type, { api, post })))
                 .then((res2) => {
                   if (!res2.data) {
                     reject(res2);
@@ -135,7 +135,7 @@ export default class API {
                 })
                 .catch(res2 => reject(res2));
             } else {
-              reject(res.error);
+              reject(res.data.error);
             }
           } else {
             resolve(res.data.data);

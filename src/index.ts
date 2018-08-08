@@ -3,21 +3,29 @@ import Login from './login/login';
 import Connect from './login/connect';
 
 export default class Wykop {
-  appkey: String;
-  secretkey: String;
-  ssl: Boolean;
-  userAgent: String;
+  appkey: string;
+  secretkey: string;
+  ssl: boolean;
+  host: string;
+  userAgent: string;
+  loggedIn: boolean;
+  username?: string;
+  userkey?: string;
+  accountkey?: string;
+  password?: string;
   API: API;
   login: Login;
   connect: Connect;
-  request: Function;
+  request: API['request'];
 
-  constructor(appkey: String, secretkey: String, params: any) {
-    const { ssl, userAgent } = params;
+  constructor(appkey: string, secretkey?: string, params?: any) {
+    const { ssl, userAgent, host } = params;
     this.appkey = appkey;
-    this.secretkey = secretkey;
+    this.secretkey = secretkey || '';
     this.ssl = !!ssl;
+    this.host = host || 'a2.wykop.pl';
     this.userAgent = userAgent || 'random';
+    this.loggedIn = false;
 
     this.API = new API(this);
     this.login = new Login(this);
