@@ -20,17 +20,21 @@ export default class API {
    * @param {Array} type request type
    * @param {Object} p request parameters
    */
-  async constructUrl(type: Array<String>, p?: IParams) {
-    let apiParams = ['appkey', this.wykop.appkey];
-    if (this.wykop.loggedIn && this.wykop.userkey) {
-      apiParams = apiParams.concat(['userkey', this.wykop.userkey]);
-    }
-    if (p && p.api) {
-      apiParams = p.api.concat(apiParams);
-    }
+  async constructUrl(type: Array<String>, { api, named }: IParams) {
     let url = `http${this.wykop.ssl ? 's' : ''}://${this.wykop.host}/`;
     url += `${type.join('/')}/`;
-    url += `${apiParams.join('/')}/`;
+    if (api) {
+      url += `${api.join('/')}/`;
+    }
+    if (named) {
+      url += `${Object.keys(named)
+        .map(key => `${ key }/${ named[key] }`)
+        .join('/')}/`;
+    }
+    url += `appkey/${this.wykop.appkey}/`;
+    if (this.wykop.loggedIn && this.wykop.userkey) {
+      url += `userkey/${this.wykop.userkey}`;
+    }
     return url;
   }
 
@@ -83,8 +87,8 @@ export default class API {
     return crypto.createHash('md5').update(txt, 'binary').digest('hex');
   }
 
-  async readyAxiosConfig(type: Array<String>, { api, post }: IParams) {
-    const url = await this.constructUrl(type, { api, post });
+  async readyAxiosConfig(type: Array<String>, { api, named, post }: IParams) {
+    const url = await this.constructUrl(type, { api, named, post });
     const headers = await this.constructHeaders(url, { post });
     let data;
     let method = 'get';
@@ -109,9 +113,9 @@ export default class API {
    * @param {Array} type request type
    * @param {Object} params request parameters
    */
-  async request(type: Array<String>, { api, post }: IParams): Promise<IWykopResponse> {
+  async request(type: Array<String>, { api, named, post }: IParams): Promise<IWykopResponse> {
     return new Promise(async (resolve, reject) => {
-      axios(await this.readyAxiosConfig(type, { api, post }))
+      axios(await this.readyAxiosConfig(type, { api, named, post }))
         .then((res) => {
           // if server sends HTML error ("trwa aktualizacja serwisu", "cos poszło nie tak")
           if (!res.headers['content-type'].includes('application/json')) {
