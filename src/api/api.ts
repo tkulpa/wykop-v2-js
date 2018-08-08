@@ -2,7 +2,7 @@ import axios from 'axios';
 import crypto from 'crypto';
 import querystring from 'querystring';
 import log from 'npmlog';
-import Wykop from '..';
+import Wykop from '../index';
 import Login from '../login/login';
 import isMaciej from '../utils/isMaciej';
 import IParams from '../types/IParams';

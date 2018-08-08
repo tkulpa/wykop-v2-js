@@ -2,11 +2,13 @@
   "name": "wykop-v2",
   "version": "0.2.1",
   "description": "SDK for Wykop API v2",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc --emitDeclarationOnly && babel src --out-dir dist --extensions \".ts,.tsx\"",
+    "build": "npm run type-create && npm run babel",
+    "type-create": "tsc --emitDeclarationOnly",
     "type-check": "tsc --noEmit",
-    "bundle": "webpack"
+    "babel": "babel src --out-dir dist --extensions \".ts,.tsx\"",
+    "lint": "npx tslint src/*"
   },
   "repository": {
     "type": "git",
@@ -15,7 +17,8 @@
   "keywords": [
     "wykop",
     "wykoppl",
-    "wykopapi"
+    "wykopapi",
+    "wykop-es6"
   ],
   "author": "rnickson <mickson@tuta.io>",
   "license": "MIT",
@@ -35,9 +38,7 @@
     "babel-loader": "^8.0.0-beta.4",
     "tslint": "^5.11.0",
     "tslint-config-airbnb-base": "^0.2.0",
-    "typescript": "^2.9.1",
-    "webpack": "^4.16.5",
-    "webpack-cli": "^3.1.0"
+    "typescript": "^2.9.1"
   },
   "dependencies": {
     "axios": "^0.18.0",
