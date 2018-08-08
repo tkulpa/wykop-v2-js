@@ -23,7 +23,9 @@ export default class Login {
       this.wykop.password = data.password;
       this.wykop.loggedIn = true;
       return req;
-    } else if (data.login && data.accountkey) {
+    }
+
+    if (data.login && data.accountkey) {
       const req = await this.wykop.API.request(['login'], {
         post: {
           login: data.login,
@@ -35,9 +37,9 @@ export default class Login {
       this.wykop.accountkey = data.accountkey;
       this.wykop.loggedIn = true;
       return req;
-    } else {
-      throw new Error('Wykop SDK error: Too little data to log in');
     }
+
+    throw new Error('Wykop SDK error: Too little data to log in');
   }
 
   async connect(data: string) {
