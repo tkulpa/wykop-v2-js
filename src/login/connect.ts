@@ -12,7 +12,7 @@ export default class Connect {
   }
 
   async constructURL(redirectURL: string) {
-    let url = await this.API.constructUrl(['login', 'connect']);
+    let url = await this.API.constructUrl(['login', 'connect'], {});
     if (redirectURL) {
       const redirect = btoa(encodeURIComponent(redirectURL));
       // @ts-ignore
