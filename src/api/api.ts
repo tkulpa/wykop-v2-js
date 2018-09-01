@@ -6,7 +6,6 @@ import Wykop from '../index';
 import Login from '../login/login';
 import isMaciej from '../utils/isMaciej';
 import IParams from '../types/IParams';
-import IWykopResponse from '../types/IWykopResponse';
 
 export default class API {
   wykop: Wykop;
@@ -93,7 +92,7 @@ export default class API {
     let data;
     let method = 'get';
     if (post) {
-      data = await this.readyPostParams(post);
+      data = await this.readyPostParams({ post });
       method = 'post';
     }
     log.silly('api', 'method', method);
@@ -113,7 +112,10 @@ export default class API {
    * @param {Array} type request type
    * @param {Object} params request parameters
    */
-  async request(type: Array<String>, { api, named, post }: IParams): Promise<IWykopResponse> {
+  async request(
+    type: Array<String>,
+    { api, named, post }: IParams,
+  ): Promise<any> {
     return new Promise(async (resolve, reject) => {
       axios(await this.readyAxiosConfig(type, { api, named, post }))
         .then((res) => {
