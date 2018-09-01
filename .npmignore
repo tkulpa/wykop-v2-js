@@ -5,3 +5,7 @@ node_modules/
 .gitignore
 .eslintrc.*
 .vscode/
+.babelrc
+.gitlab-ci.yml
+tsconfig.json
+tslint.json
