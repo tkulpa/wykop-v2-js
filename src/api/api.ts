@@ -1,11 +1,13 @@
 import axios from 'axios';
 import crypto from 'crypto';
 import querystring from 'querystring';
-import log from 'npmlog';
+import { Log } from 'ng2-logger';
 import Wykop from '../index';
-import Login from '../login/login';
 import isMaciej from '../utils/isMaciej';
 import IParams from '../types/IParams';
+import IRequestHeaders from '../types/IRequestHeaders';
+
+const log = Log.create('api');
 
 export default class API {
   wykop: Wykop;
@@ -43,13 +45,12 @@ export default class API {
    * @param {Object} params request parameters
    */
   async constructHeaders(url: string, { post }: IParams) {
-    const headers = {
+    const headers: IRequestHeaders = {
       'User-Agent': this.wykop.userAgent,
       'Content-Type': 'application/x-www-form-urlencoded',
-      apisign: await this.sign(url, { post }),
     };
-    if (isMaciej(this.wykop.appkey)) {
-      delete(headers.apisign);
+    if (!isMaciej(this.wykop.appkey)) {
+      headers.apisign = await this.sign(url, { post });
     }
     return headers;
   }
@@ -81,7 +82,7 @@ export default class API {
       }
       txt += postValues.join(',');
     }
-    log.silly('api', 'sign txt', txt);
+    log.d('sign txt', txt);
     // @ts-ignore
     return crypto.createHash('md5').update(txt, 'binary').digest('hex');
   }
@@ -95,10 +96,10 @@ export default class API {
       data = await this.readyPostParams({ post });
       method = 'post';
     }
-    log.silly('api', 'method', method);
-    log.silly('api', 'url', url);
-    log.silly('api', 'post data', post);
-    log.silly('api', 'headers', headers);
+    log.d('method', method);
+    log.d('url', url);
+    log.d('post data', post);
+    log.d('headers', headers);
     return {
       method,
       url,

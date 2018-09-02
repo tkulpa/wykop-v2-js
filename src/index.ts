@@ -1,6 +1,12 @@
+import { Log } from 'ng2-logger';
 import API from './api/api';
 import Login from './login/login';
 import Connect from './login/connect';
+import IConstructorParams from './types/IConstructorParams';
+
+if (!(process && process.env && process.env.WYKOP_V2_DEV)) {
+  Log.setProductionMode();
+}
 
 export default class Wykop {
   appkey: string;
@@ -18,11 +24,12 @@ export default class Wykop {
   connect: Connect;
   request: API['request'];
 
-  constructor(appkey: string, secretkey?: string, params?: any) {
+  constructor(appkey: string, secretkey?: string, p?: IConstructorParams) {
+    const params = p || {};
     const { ssl, userAgent, host } = params;
     this.appkey = appkey;
     this.secretkey = secretkey || '';
-    this.ssl = !!ssl;
+    this.ssl = typeof ssl !== 'undefined' ? !!ssl : true;
     this.host = host || 'a2.wykop.pl';
     this.userAgent = userAgent || 'random';
     this.loggedIn = false;

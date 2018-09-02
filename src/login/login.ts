@@ -13,7 +13,7 @@ export default class Login {
 
   async normal(data: ILoginData) {
     if (data.login && data.password && isMaciej(this.wykop.appkey)) {
-      const req: ILoginResponse = await this.wykop.API.request(['login'], {
+      const req: ILoginResponse = await this.wykop.API.request(['Login'], {
         post: {
           login: data.login,
           password: data.password,
@@ -50,36 +50,40 @@ export default class Login {
     // or manipulated by user, than just making a request with it
     if (!(connectData.login && connectData.appkey && connectData.token)) {
       throw new Error('Manipulated connect data');
-    } else if (connectData.appkey !== this.wykop.appkey) {
-      throw new Error('Connect data for wrong appkey');
-    } else {
-      const req = await this.wykop.API.request(['login'], {
-        post: {
-          login: connectData.login,
-          accountkey: connectData.token,
-        },
-      });
-      this.wykop.userkey = req.userkey;
-      this.wykop.login = req.profile.login;
-      this.wykop.accountkey = connectData.token;
-      this.wykop.loggedIn = true;
-      return req;
     }
+
+    if (connectData.appkey !== this.wykop.appkey) {
+      throw new Error('Connect data for wrong appkey');
+    }
+
+    const req = await this.wykop.API.request(['login'], {
+      post: {
+        login: connectData.login,
+        accountkey: connectData.token,
+      },
+    });
+    this.wykop.userkey = req.userkey;
+    this.wykop.login = req.profile.login;
+    this.wykop.accountkey = connectData.token;
+    this.wykop.loggedIn = true;
+    return req;
   }
 
   async relogin() {
     if (this.wykop.username && this.wykop.password && isMaciej(this.wykop.appkey)) {
-      this.normal({
+      return this.normal({
         login: this.wykop.username,
         password: this.wykop.password,
       });
-    } else if (this.wykop.username && this.wykop.accountkey) {
+    }
+
+    if (this.wykop.username && this.wykop.accountkey) {
       this.normal({
         login: this.wykop.username,
         accountkey: this.wykop.accountkey,
       });
-    } else {
-      throw new Error("Class doesn't contain all required information");
     }
+
+    throw new Error('Class doesn\'t contain all required information');
   }
 }
