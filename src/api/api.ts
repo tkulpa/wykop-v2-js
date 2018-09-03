@@ -1,6 +1,7 @@
 import axios from 'axios';
 import crypto from 'crypto';
 import querystring from 'querystring';
+import { isBrowser, isNode } from 'browser-or-node';
 import { Log } from 'ng2-logger';
 import Wykop from '../index';
 import isMaciej from '../utils/isMaciej';
@@ -46,9 +47,11 @@ export default class API {
    */
   async constructHeaders(url: string, { post }: IParams) {
     const headers: IRequestHeaders = {
-      'User-Agent': this.wykop.userAgent,
       'Content-Type': 'application/x-www-form-urlencoded',
     };
+    if (isNode) {
+      headers['User-Agent'] = this.wykop.userAgent;
+    }
     if (!isMaciej(this.wykop.appkey)) {
       headers.apisign = await this.sign(url, { post });
     }

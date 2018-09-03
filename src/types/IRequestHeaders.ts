@@ -1,5 +1,5 @@
 export default interface IRequestHeaders {
-  'User-Agent': string;
+  'User-Agent'?: string;
   'Content-Type': string;
   apisign?: string;
 }
