@@ -90,6 +90,17 @@ export default class API {
     return crypto.createHash('md5').update(txt, 'binary').digest('hex');
   }
 
+  addOtherProperties(response: any) {
+    const ret = response.data;
+    const properties = Object.keys(response).filter(e => e !== 'data');
+    if (typeof response.data === 'object') {
+      properties.forEach(e => ret[e] = response[e]);
+    } else {
+      properties.forEach(e => ret.prototype[e] = response[e]);
+    }
+    return ret;
+  }
+
   async readyAxiosConfig(type: Array<String>, { api, named, post }: IParams) {
     const url = await this.constructUrl(type, { api, named, post });
     const headers = await this.constructHeaders(url, { post });
@@ -140,7 +151,7 @@ export default class API {
                   } else if (res2.data.error) {
                     reject(res2.data.error);
                   } else {
-                    resolve(res2.data.data);
+                    resolve(this.addOtherProperties(res2));
                   }
                 })
                 .catch(res2 => reject(res2));
@@ -148,7 +159,7 @@ export default class API {
               reject(res.data.error);
             }
           } else {
-            resolve(res.data.data);
+            resolve(this.addOtherProperties(res.data));
           }
         })
         .catch(res => reject(res));
