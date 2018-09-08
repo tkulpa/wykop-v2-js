@@ -1,6 +1,6 @@
 {
   "name": "wykop-v2",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "SDK for Wykop API v2",
   "main": "dist/index.js",
   "scripts": {
