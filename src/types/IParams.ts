@@ -1,5 +1,5 @@
 export default interface Params {
-  api?: Array<any>;
+  api?: any[];
   post?: {
     [key: string]: any;
   };

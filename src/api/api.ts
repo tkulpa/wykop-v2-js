@@ -22,7 +22,7 @@ export default class API {
    * @param {Array} type request type
    * @param {Object} p request parameters
    */
-  async constructUrl(type: Array<String>, { api, named }: IParams) {
+  async constructUrl(type: string[], { api, named }: IParams) {
     let url = `http${this.wykop.ssl ? 's' : ''}://${this.wykop.host}/`;
     url += `${type.join('/')}/`;
     if (api) {
@@ -75,8 +75,8 @@ export default class API {
     // Not tested yet
     let txt = `${this.wykop.secretkey}${url}`;
     if (post) {
-      let postValues: Array<string> = [];
-      const postKeys: Array<string> = Object.keys(post);
+      let postValues: string[] = [];
+      const postKeys: string[] = Object.keys(post);
       let i = 0;
       for (; i < postKeys.length; i += 1) {
         postValues = postValues.concat(
@@ -101,7 +101,7 @@ export default class API {
     return ret;
   }
 
-  async readyAxiosConfig(type: Array<String>, { api, named, post }: IParams) {
+  async readyAxiosConfig(type: string[], { api, named, post }: IParams) {
     const url = await this.constructUrl(type, { api, named, post });
     const headers = await this.constructHeaders(url, { post });
     let data;
@@ -128,7 +128,7 @@ export default class API {
    * @param {Object} params request parameters
    */
   async request(
-    type: Array<String>,
+    type: string[],
     { api, named, post }: IParams,
   ): Promise<any> {
     return new Promise(async (resolve, reject) => {
