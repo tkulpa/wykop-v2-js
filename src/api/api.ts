@@ -2,13 +2,10 @@ import axios from 'axios';
 import crypto from 'crypto';
 import querystring from 'querystring';
 import { isBrowser, isNode } from 'browser-or-node';
-import { Log } from 'ng2-logger';
 import Wykop from '../index';
 import isMaciej from '../utils/isMaciej';
 import IParams from '../types/IParams';
 import IRequestHeaders from '../types/IRequestHeaders';
-
-const log = Log.create('api');
 
 export default class API {
   wykop: Wykop;
@@ -85,7 +82,6 @@ export default class API {
       }
       txt += postValues.join(',');
     }
-    log.d('sign txt', txt);
     // @ts-ignore
     return crypto.createHash('md5').update(txt, 'binary').digest('hex');
   }
@@ -110,10 +106,6 @@ export default class API {
       data = await this.readyPostParams({ post });
       method = 'post';
     }
-    log.d('method', method);
-    log.d('url', url);
-    log.d('post data', post);
-    log.d('headers', headers);
     return {
       method,
       url,

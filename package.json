@@ -9,7 +9,8 @@
     "type-create": "tsc --emitDeclarationOnly",
     "type-check": "tsc --noEmit",
     "babel": "babel src --out-dir dist --extensions \".ts,.tsx\"",
-    "lint": "npx tslint src/*"
+    "lint": "npx tslint src/*",
+    "dev": "npm run build && node dist/pseudotest.js"
   },
   "repository": {
     "type": "git",
@@ -41,7 +42,6 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "browser-or-node": "^1.1.0",
-    "ng2-logger": "^2.0.35"
+    "browser-or-node": "^1.1.0"
   }
 }

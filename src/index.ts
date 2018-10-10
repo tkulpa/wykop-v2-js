@@ -1,14 +1,8 @@
-import { isBrowser, isNode } from 'browser-or-node';
-import { Log } from 'ng2-logger';
 import API from './api/api';
 import Login from './login/login';
 import Connect from './login/connect';
 import IConstructorParams from './types/IConstructorParams';
 import isMaciej from './utils/isMaciej';
-
-if (isBrowser || (isNode && !process.env.WYKOP_V2_DEV)) {
-  Log.setProductionMode();
-}
 
 export default class Wykop {
   appkey: string;
