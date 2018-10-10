@@ -21,13 +21,17 @@ export default class Wykop {
   request: API['request'];
 
   constructor(appkey: string, secretkey?: string, p?: IConstructorParams) {
-    const params = p || {};
-    const { ssl, userAgent, host } = params;
+    const { ssl, userAgent, host } = Object.assign({
+      ssl: true,
+      host: 'a2.wykop.pl',
+      userAgent: 'random',
+      usingBridge: false,
+    }, p);
     this.appkey = appkey;
     this.secretkey = secretkey || '';
-    this.ssl = typeof ssl !== 'undefined' ? !!ssl : true;
-    this.host = host || 'a2.wykop.pl';
-    this.userAgent = userAgent || 'random';
+    this.ssl = ssl;
+    this.host = host;
+    this.userAgent = userAgent;
     this.loggedIn = false;
 
     this.API = new API(this);

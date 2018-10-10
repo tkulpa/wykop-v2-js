@@ -19,16 +19,21 @@ export default class API {
    * @param {Array} type request type
    * @param {Object} p request parameters
    */
-  async constructUrl(type: string[], { api, named }: IParams) {
-    let url = `http${this.wykop.ssl ? 's' : ''}://${this.wykop.host}/`;
+  async constructUrl(type: string[], { api, named }: IParams, isForSign = false) {
+    let url: string;
+    if (isForSign) {
+      url = 'https://a2.wykop.pl/';
+    } else {
+      url = `http${this.wykop.ssl ? 's' : ''}://${this.wykop.host}/`;
+    }
     url += `${type.join('/')}/`;
     if (api) {
       url += `${api.join('/')}/`;
     }
     if (named) {
-      url += `${Object.keys(named)
+      url += Object.keys(named)
         .map(key => `${ key }/${ named[key] }`)
-        .join('/')}/`;
+        .join('/') + '/';
     }
     url += `appkey/${this.wykop.appkey}/`;
     if (this.wykop.loggedIn && this.wykop.userkey) {
@@ -42,7 +47,7 @@ export default class API {
    * @param {String} url request URL
    * @param {Object} params request parameters
    */
-  async constructHeaders(url: string, { post }: IParams) {
+  async constructHeaders(type: string[], { api, named, post }: IParams) {
     const headers: IRequestHeaders = {
       'Content-Type': 'application/x-www-form-urlencoded',
     };
@@ -50,7 +55,7 @@ export default class API {
       headers['User-Agent'] = this.wykop.userAgent;
     }
     if (!isMaciej(this.wykop.appkey)) {
-      headers.apisign = await this.sign(url, { post });
+      headers.apisign = await this.sign(type, { api, named, post });
     }
     return headers;
   }
@@ -68,19 +73,12 @@ export default class API {
    * @param {String} url request URL
    * @param {Object} params request parameters
    */
-  async sign(url: string, { post }: IParams) {
-    // Not tested yet
-    let txt = `${this.wykop.secretkey}${url}`;
+  async sign(type: string[], { api, named, post }: IParams) {
+    let txt = `${this.wykop.secretkey}${this.constructUrl(type, { api, named, post })}`;
     if (post) {
-      let postValues: string[] = [];
-      const postKeys: string[] = Object.keys(post);
-      let i = 0;
-      for (; i < postKeys.length; i += 1) {
-        postValues = postValues.concat(
-          unescape(encodeURIComponent(post[postKeys[i]])),
-        );
-      }
-      txt += postValues.join(',');
+      txt += Object.values(post)
+        .map(e => unescape(encodeURIComponent(e))) // force UTF-8 encoding
+        .join(',');
     }
     // @ts-ignore
     return crypto.createHash('md5').update(txt, 'binary').digest('hex');
@@ -99,7 +97,7 @@ export default class API {
 
   async readyAxiosConfig(type: string[], { api, named, post }: IParams) {
     const url = await this.constructUrl(type, { api, named, post });
-    const headers = await this.constructHeaders(url, { post });
+    const headers = await this.constructHeaders(type, { api, named, post });
     let data;
     let method = 'get';
     if (post) {
