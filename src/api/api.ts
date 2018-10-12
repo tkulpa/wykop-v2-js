@@ -19,7 +19,7 @@ export default class API {
    * @param {Array} type request type
    * @param {Object} p request parameters
    */
-  async constructUrl(type: string[], { api, named }: IParams, isForSign = false) {
+  async constructUrl(type: string[], { api, named }: IParams, isForSign?: boolean) {
     let url: string;
     if (isForSign) {
       url = 'https://a2.wykop.pl/';
@@ -74,7 +74,7 @@ export default class API {
    * @param {Object} params request parameters
    */
   async sign(type: string[], { api, named, post }: IParams) {
-    let txt = `${this.wykop.secretkey}${this.constructUrl(type, { api, named, post })}`;
+    let txt = `${this.wykop.secretkey}${this.constructUrl(type, { api, named, post }, true)}`;
     if (post) {
       txt += Object.values(post)
         .map(e => unescape(encodeURIComponent(e))) // force UTF-8 encoding
