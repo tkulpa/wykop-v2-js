@@ -36,6 +36,7 @@
     "@babel/preset-env": "^7.0.0-beta.49",
     "@babel/preset-typescript": "^7.0.0-alpha.49",
     "@types/node": "^10.5.7",
+    "@types/querystringify": "^2.0.0",
     "tslint": "^5.11.0",
     "tslint-config-airbnb-base": "^0.2.0",
     "typescript": "^2.9.1"
@@ -44,6 +45,7 @@
     "@types/js-md5": "^0.4.2",
     "axios": "^0.18.0",
     "browser-or-node": "^1.1.0",
-    "js-md5": "^0.7.3"
+    "js-md5": "^0.7.3",
+    "querystringify": "^2.1.0"
   }
 }

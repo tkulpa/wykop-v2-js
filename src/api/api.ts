@@ -1,5 +1,5 @@
 import axios from 'axios';
-import querystring from 'querystring';
+import querystring from 'querystringify';
 import md5 from 'js-md5';
 import { isNode } from 'browser-or-node';
 import Wykop from '../index';
@@ -65,6 +65,7 @@ export default class API {
    * @param {Object} postParams request POST body
    */
   async readyPostParams({ post }: IParams) {
+    if (!post) return;
     return querystring.stringify(post);
   }
 
