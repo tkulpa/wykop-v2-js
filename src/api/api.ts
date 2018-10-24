@@ -1,7 +1,7 @@
 import axios from 'axios';
-import crypto from 'crypto';
 import querystring from 'querystring';
-import { isBrowser, isNode } from 'browser-or-node';
+import md5 from 'js-md5';
+import { isNode } from 'browser-or-node';
 import Wykop from '../index';
 import isMaciej from '../utils/isMaciej';
 import IParams from '../types/IParams';
@@ -80,8 +80,7 @@ export default class API {
         .map(e => unescape(encodeURIComponent(e))) // force UTF-8 encoding
         .join(',');
     }
-    // @ts-ignore
-    return crypto.createHash('md5').update(txt, 'binary').digest('hex');
+    return md5(txt);
   }
 
   addOtherProperties(response: any) {

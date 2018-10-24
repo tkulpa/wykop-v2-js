@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import md5 from 'js-md5';
 import API from '../api/api';
 import Wykop from '..';
 
@@ -15,8 +15,7 @@ export default class Connect {
     let url = await this.API.constructUrl(['login', 'connect'], {});
     if (redirectURL) {
       const redirect = btoa(encodeURIComponent(redirectURL));
-      // @ts-ignore
-      const secure = crypto.createHash('md5').update(encodeURIComponent(`${this.wykop.secretkey},${redirectURL}`), 'binary').digest('hex');
+      const secure = md5(`${this.wykop.secretkey},${redirectURL}`);
       url += `?redirect=${redirect}&secure=${secure}`;
     }
     return url;

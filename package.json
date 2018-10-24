@@ -41,7 +41,9 @@
     "typescript": "^2.9.1"
   },
   "dependencies": {
+    "@types/js-md5": "^0.4.2",
     "axios": "^0.18.0",
-    "browser-or-node": "^1.1.0"
+    "browser-or-node": "^1.1.0",
+    "js-md5": "^0.7.3"
   }
 }
