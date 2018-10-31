@@ -2,7 +2,6 @@ import API from './api/api';
 import Login from './login/login';
 import Connect from './login/connect';
 import IConstructorParams from './types/IConstructorParams';
-import isMaciej from './utils/isMaciej';
 
 export default class Wykop {
   appkey: string;
@@ -41,5 +40,3 @@ export default class Wykop {
     this.request = this.API.request.bind(this.API);
   }
 }
-
-export { isMaciej };
