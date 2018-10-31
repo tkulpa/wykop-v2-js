@@ -3,7 +3,6 @@ import querystring from 'querystringify';
 import md5 from 'js-md5';
 import { isNode } from 'browser-or-node';
 import Wykop from '../index';
-import isMaciej from '../utils/isMaciej';
 import IParams from '../types/IParams';
 import IRequestHeaders from '../types/IRequestHeaders';
 
@@ -54,9 +53,7 @@ export default class API {
     if (isNode) {
       headers['User-Agent'] = this.wykop.userAgent;
     }
-    if (!isMaciej(this.wykop.appkey)) {
-      headers.apisign = await this.sign(type, { api, named, post });
-    }
+    headers.apisign = await this.sign(type, { api, named, post });
     return headers;
   }
 

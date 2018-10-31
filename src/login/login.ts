@@ -1,4 +1,3 @@
-import isMaciej from '../utils/isMaciej';
 import IConnectData from '../types/IConnectData';
 import Wykop from '..';
 import ILoginData from '../types/ILoginData';
@@ -12,7 +11,7 @@ export default class Login {
   }
 
   async normal(data: ILoginData) {
-    if (data.login && data.password && isMaciej(this.wykop.appkey)) {
+    if (data.login && data.password) {
       const req: ILoginResponse = await this.wykop.API.request(['Login'], {
         post: {
           login: data.login,
@@ -70,7 +69,7 @@ export default class Login {
   }
 
   async relogin() {
-    if (this.wykop.username && this.wykop.password && isMaciej(this.wykop.appkey)) {
+    if (this.wykop.username && this.wykop.password) {
       return this.normal({
         login: this.wykop.username,
         password: this.wykop.password,
